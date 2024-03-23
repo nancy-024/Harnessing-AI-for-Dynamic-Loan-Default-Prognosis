@@ -1,1 +1,2 @@
 # Harnessing-AI-for-Dynamic-Loan-Default-Prognosis
+In this project, we've leveraged cutting-edge artificial intelligence (AI) algorithms to develop a dynamic system for predicting loan defaults. By analyzing vast amounts of real-time data and employing advanced predictive modeling techniques, we've created a tool that enables financial institutions to proactively manage and mitigate loan default risks.

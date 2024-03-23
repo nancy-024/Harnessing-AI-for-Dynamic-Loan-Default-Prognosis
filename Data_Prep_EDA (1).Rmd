@@ -1,0 +1,540 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+install.packages("dplyr")
+install.packages("tidyr")
+install.packages("ggplot2")
+install.packages("mice")
+install.packages("DataExplorer")
+install.packages("caTools")
+install.packages("caret")
+
+
+
+library(mice)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(DataExplorer)
+library(caTools)
+library(caret)
+
+
+```
+
+```{r}
+
+df <- read.csv("Loan_Default.csv")
+head(df)
+
+
+```
+
+```{r}
+
+View(df)
+
+
+```
+
+```{r}
+
+str(df)
+
+```
+
+```{r}
+
+# also used for checking wrong df entry error
+summary(df)
+
+
+```
+
+```{r}
+
+missing_values <- colSums(is.na(df))
+print(missing_values)
+
+```
+
+```{r}
+
+duplicate_rows <- df[duplicated(df), ]
+duplicate_rows
+
+
+```
+
+```{r}
+
+# Impute missing values in numerical columns with mean
+num_cols <- sapply(df, is.numeric)
+
+df[, num_cols] <- lapply(df[, num_cols], function(x) replace(x, is.na(x), mean(x, na.rm = TRUE)))
+
+```
+
+```{r}
+
+cat_cols <- sapply(df, is.factor)
+
+df[, cat_cols] <- lapply(df[, cat_cols], function(x) {
+  levels <- unique(x)
+  mode <- levels[which.max(tabulate(match(x, levels)))]
+  replace(x, is.na(x), mode)
+})
+
+```
+
+```{r}
+
+# pMM (Predictive Mean Matching)
+
+# Perform imputation
+#imputed_df <- mice(df, method = "pmm", m = 5)  # m is the number of imputed dfsets
+
+# Extract the imputed dfset
+#imputed_df <- complete(imputed_df)
+
+
+#df <- mutate_at(df, vars(-all_of("loan_amount")), ~ ifelse(. < 0, NA, .))
+
+
+```
+
+```{r}
+
+# Remove negative sign from all values
+#df <- mutate_all(df[,num_cols], function(x) abs(x))
+
+
+```
+
+```{r}
+
+# Save the modified dfset
+#write.csv(df, "modified_dfset.csv", row.names = FALSE)
+
+```
+
+```{r}
+
+# Remove duplicate rows
+df <- unique(df)
+
+
+
+```
+
+# EDA using df Explorer
+
+```{r}
+
+#install.packages("ggplot2", repos = "http://cran.us.r-project.org", version = "1.2")
+
+
+```
+
+
+
+```{r}
+
+plot_missing(df)
+
+```
+
+```{r}
+
+# Drop a column using subset()
+df <- subset(df, select = -ID)
+
+```
+
+```{r}
+
+# dropping multiple columns
+df <- subset(df, select = -c(year,dtir1,submission_of_application))
+
+```
+
+
+# Univaraite df analysis
+
+```{r Fig1, echo=TRUE, fig.height=10, fig.width=10}
+
+plot_histogram(df)
+
+```
+
+```{r}
+
+plot_bar(df,ggtheme = theme_bw(),title="Univariate analysis of Catergorical column using barplot")
+
+```
+
+
+
+```{r Fig2, echo=TRUE, fig.height=10, fig.width=10}
+
+num_df <- df[sapply(df, is.numeric)]
+
+# Plot correlation matrix
+plot_correlation(num_df)
+
+```
+
+```{r Fig3, echo=TRUE, fig.height=10, fig.width=10}
+
+plot_boxplot(df,by="Gender")
+
+
+```
+
+```{r}
+
+plot_density(df)
+
+
+```
+
+
+
+
+# bivariate analysis
+
+```{r}
+
+scatter_plot <- ggplot(df, aes(x = loan_amount, y = Credit_Score)) +
+  geom_point() +
+  labs(x = "Loan Amount", y = "Credit Score", title = "Scatter Plot")
+
+scatter_plot
+
+```
+
+
+```{r}
+
+correlation_matrix <- cor(select(df, loan_amount, Credit_Score))
+print(correlation_matrix)
+
+```
+
+
+
+
+
+
+
+```{r}
+
+contingency_table <- table(df$Gender, df$loan_type)
+print(contingency_table)
+
+```
+
+```{r}
+
+chi_square_test <- chisq.test(contingency_table)
+print(chi_square_test)
+
+```
+
+```{r}
+
+box_plot <- ggplot(df, aes(x = loan_type, y = loan_amount)) +
+  geom_boxplot() +
+  labs(x = "Loan Type", y = "Loan Amount", title = "Box Plot")
+
+print(box_plot)
+
+```
+
+```{r}
+
+
+t_test <- t.test(loan_amount ~ Credit_Worthiness, data = df)
+print(t_test)
+
+```
+
+
+
+
+
+
+
+
+
+# Creating summary reports in single line
+
+
+```{r}
+
+summary <- create_report(df)
+summary
+
+```
+
+
+
+
+```{r}
+
+set.seed(123)
+
+```
+
+```{r}
+
+split <- sample.split(df$loan_amount, SplitRatio = 0.8)
+train_df <- subset(df, split == TRUE)
+test_df <- subset(df, split == FALSE)
+
+
+```
+
+```{r}
+
+lm_model <- lm(loan_amount ~ ., data = train_df)
+
+
+```
+
+```{r}
+
+summary(lm_model)
+
+
+```
+
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
